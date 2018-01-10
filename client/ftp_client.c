@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-
+#include "ftp.h"
 #define BUFFSIZE 1024 
 
 int main(int argc ,char * argv[])
@@ -41,55 +41,33 @@ int main(int argc ,char * argv[])
         exit(EXIT_FAILURE);
     }
     printf("connect success\n");
+    int j=0;
+    while( 1 )
+    {
+        if( j == 4 )
+        {
+            printf("login num too much,quit\n");
+            exit(1);
+        }
+       if( login(sockfd) )
+       {
+           break;
+       }
+       j++;
+    }
 
-    if( (pid = fork()) < 0  )
+/*    if( (pid = fork()) < 0  )
     {
         perror("fork  err\n");
         exit(EXIT_FAILURE);
     }
     else if( 0 == pid )
     {   
-        while ( 1 )
-        {
-            memset(buff,'\0',BUFFSIZE);
-
-            len = recv(sockfd,buff,BUFFSIZE,0);
-            if( len  >  0 )
-            {
-                printf("recv message: %s\n",buff);
-            }
-            else if ( 0 == len )
-            {
-                printf("the other one close\n");
-                break;
-            }
-            else 
-            {
-                perror("recv err\n");
-                break;
-            }
-        }
+        recv_cmd_fork(sockfd);
     }
-    else
+    else*/
     {
-        while( 1 )
-        {
-            memset(buff,'\0',BUFFSIZE);
-            printf("please  input your message:");
-            fgets(buff,BUFFSIZE,stdin);
-            if(  strncmp(buff,"quit",4) == 0 )
-            {
-                printf("i  will  quit\n");
-                break;
-            }
-
-            len = send(sockfd,buff,strlen(buff) - 1,0);
-            if( len < 0 )
-            {
-                printf("send  err\n");
-                exit(EXIT_FAILURE);
-            }
-        }
+        send_cmd_fork(sockfd);
     }
     
     return 0;
